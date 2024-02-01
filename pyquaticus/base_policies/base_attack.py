@@ -24,7 +24,7 @@ import numpy as np
 from pyquaticus.base_policies.base import BaseAgentPolicy
 from pyquaticus.envs.pyquaticus import config_dict_std, Team
 
-modes = {"easy", "medium", "hard", "competition_nothing", "competition_easy", "competition_medium"}
+modes = {"easy", "medium", "hard", "nothing", "competition_easy", "competition_medium"}
 """
 Difficulty modes for the policy, each one has different behavior. 
 'easy' = Easy Attacker - Go straight to goal
@@ -99,7 +99,7 @@ class BaseAttacker(BaseAgentPolicy):
                 # If there is an error converting the vector to a heading, just go straight
                 act_index = 12
 
-        elif self.mode=="competition_nothing":
+        elif self.mode=="nothing":
             act_index = -1
 
         elif self.mode=="competition_easy":

@@ -511,10 +511,10 @@ class PyQuaticusEnv(PyQuaticusEnvBase):
         self.game_score = {'blue_captures':0, 'blue_tags':0, 'blue_grabs':0, 'red_captures':0, 'red_tags':0, 'red_grabs':0}    
         self.render_mode = render_mode
         self.render_ids = render_agent_ids
-
+        self.collision_radius = config_dict["collision_radius"]
         # set variables from config
         self.set_config_values(self.config_dict)
-
+        self.active_collisions = [] #List containing all new collisions between agents (Prevents collisions being counted every step)
         self.state = {}
         self.dones = {}
         self.reset_count = 0
@@ -871,6 +871,23 @@ class PyQuaticusEnv(PyQuaticusEnvBase):
         self.state["agent_captures"] = [None] * self.num_agents
         for player in self.players.values():
             # Only continue logic check if player tagged someone if it's on its own side and is untagged.
+            for other_player in self.players.values():
+                if other_player.id == player.id:
+                    continue
+                else:
+                    dist_between_agents = self.get_distance_between_2_points(
+                            player.pos, other_player.pos
+                        )
+                    if (player.id, other_player.id) in self.active_collisions:
+                        if dist_between_agents <= self.collision_radius:
+                            continue
+                        else:
+                            self.active_collisions.remove((player.id,other_player.id))
+                    else:
+                        if dist_between_agents <= self.collision_radius:
+                            self.state["num_agent_collisions"][other_player.id] += 1
+                            self.state["num_agent_collisions"][player.id] += 1
+                            self.active_collisions.append((player.id, other_player.id))
             if player.on_own_side and (
                 player.tagging_cooldown == self.tagging_cooldown
             ) and not player.is_tagged:
@@ -1272,7 +1289,7 @@ class PyQuaticusEnv(PyQuaticusEnvBase):
 
         if options is not None:
             self.normalize = options.get("normalize", config_dict_std["normalize"])
-
+            self.collision_radius = options["collision_radius"]
         if return_info:
             raise DeprecationWarning("return_info has been deprecated by PettingZoo -- https://github.com/Farama-Foundation/PettingZoo/pull/890")
 
@@ -1283,7 +1300,7 @@ class PyQuaticusEnv(PyQuaticusEnvBase):
             ],  # Blue Team
             [self.world_size[0] / 8, self.world_size[1] / 2],  # Red Team
         ]
-
+        
         for flag in self.flags:
             flag.home = flag_locations[int(flag.team)]
             flag.reset()
@@ -1309,8 +1326,9 @@ class PyQuaticusEnv(PyQuaticusEnvBase):
             ] * self.num_agents,  # whether this agent tagged something
             "agent_tagged": [0] * self.num_agents,  # if this agent was tagged
             "agent_oob": [0] * self.num_agents,  # if this agent went out of bounds
+            "num_agent_collisions": [0] * self.num_agents,# The number of collisions each agent has been involved in
         }
-
+        self.active_collisions = []
         for k in self.game_score:
             self.game_score[k] = 0
 

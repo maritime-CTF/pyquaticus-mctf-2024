@@ -11,6 +11,7 @@ config_dict_std = {
     "agent_radius": 2.0,  # meters
     "catch_radius": 10.0,  # meters
     "flag_keepout": 5.0,  # minimum distance (meters) between agent and flag centers
+    "collision_radius": 2.2, # Distance between agents that counts as a collision
     "max_speed": MAX_SPEED,  # meters / s
     "own_side_accel": (
         1.0
@@ -25,7 +26,7 @@ config_dict_std = {
         1 / 10
     ),  # max dt (seconds) for updating the simulation
     "sim_speedup_factor": 1, # simulation speed multiplier (integer >= 1)
-    "max_time": 240.0,  # maximum time (seconds) per episode
+    "max_time": 360.0,  # maximum time (seconds) per episode
     "max_score": 1,     # maximum score per episode (until a winner is declared)
     "max_screen_size": get_screen_res(),
     "random_init": (

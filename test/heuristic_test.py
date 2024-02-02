@@ -23,9 +23,9 @@ obs = env.reset()
 temp_score = env.game_score
 
 H_one = BaseAttacker(2, Team.RED_TEAM, mode='competition_easy')
-H_two = BaseDefender(3, Team.RED_TEAM, mode='competition_easy')
+H_two = BaseDefender(3, Team.RED_TEAM, mode='competition_medium')
 
-R_one = BaseDefender(0, Team.BLUE_TEAM, mode='competition_easy')
+R_one = BaseDefender(0, Team.BLUE_TEAM, mode='competition_medium')
 R_two = BaseAttacker(1, Team.BLUE_TEAM, mode='competition_easy')
 step = 0
 while True:

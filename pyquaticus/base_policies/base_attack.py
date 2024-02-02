@@ -49,6 +49,7 @@ class BaseAttacker(BaseAgentPolicy):
 
         self.using_pyquaticus = using_pyquaticus
         self.competition_easy = [15, 6, 50, 35]
+        #self.competition_medium = []
         self.goal = 'SC'
 
     def set_mode(self, mode: str):

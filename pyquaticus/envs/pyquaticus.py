@@ -530,7 +530,7 @@ class PyQuaticusEnv(PyQuaticusEnvBase):
         self.state = {}
         self.dones = {}
         self.reset_count = 0
-
+        self.step_num = 0
         self.learning_iteration = 0
 
         self.seed()
@@ -643,10 +643,12 @@ class PyQuaticusEnv(PyQuaticusEnvBase):
 
             Additional info (not currently used)
         """
+
         if self.state is None:
             raise Exception("Call reset before using step method.")
 
         # set the time
+        self.step_num += 1
         self.current_time += self.sim_speedup_factor * self.tau
         self.state["current_time"] = self.current_time
         if not set(raw_action_dict.keys()) <= set(self.players):
@@ -780,7 +782,7 @@ class PyQuaticusEnv(PyQuaticusEnvBase):
                         self.red_team_flag_pickup = False
                     else:
                         self.blue_team_flag_pickup = False
-                self.state["agent_oob"][player.id] = 1
+                self.state["agent_oob"][player.id] = self.step_num
                 if config_dict_std["teleport_on_tag"]:
                     player.reset()
                 else:
@@ -789,7 +791,8 @@ class PyQuaticusEnv(PyQuaticusEnvBase):
                     player.rotate()
                 continue
             else:
-                self.state["agent_oob"][player.id] = 0
+                if self.state["agent_oob"][player.id] < self.step_num:
+                    self.state["agent_oob"][player.id] = -1
 
             # check if agent is in keepout region
             ag_dis_2_flag = self.get_distance_between_2_points(
@@ -1350,7 +1353,7 @@ class PyQuaticusEnv(PyQuaticusEnvBase):
                 None
             ] * self.num_agents,  # whether this agent tagged something
             "agent_tagged": [0] * self.num_agents,  # if this agent was tagged
-            "agent_oob": [0] * self.num_agents,  # if this agent went out of bounds
+            "agent_oob": [-1] * self.num_agents,  # if this agent went out of bounds
             "num_agent_collisions": [0] * self.num_agents,# The number of collisions each agent has been involved in
         }
         self.active_collisions = []
@@ -1368,6 +1371,7 @@ class PyQuaticusEnv(PyQuaticusEnvBase):
         self.message = ""
         self.current_time = 0
         self.reset_count += 1
+        self.step_num = 0
         reset_obs = {agent_id: self.state_to_obs(agent_id, self.normalize) for agent_id in self.players}
 
         if self.render_mode:

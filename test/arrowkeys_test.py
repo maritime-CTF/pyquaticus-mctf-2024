@@ -31,7 +31,7 @@ from pyquaticus.envs.pyquaticus import Team
 import pyquaticus
 from pyquaticus import pyquaticus_v0
 import pyquaticus.utils.rewards as reward
-
+import pyquaticus.utils.rewards as rew
 class KeyTest:
 
     def __init__(self, env, red_policy=None, quittable=True):
@@ -136,7 +136,7 @@ def main():
     #reward_config = {0:reward.sparse, 1:reward.sparse}
     
     #PyQuaticusEnv is a Parallel Petting Zoo Environment
-    env = pyquaticus_v0.PyQuaticusEnv(render_mode='human', team_size=1)
+    env = pyquaticus_v0.PyQuaticusEnv(render_mode='human', team_size=1, reward_config=reward_config)
     red_policy = args.red_policy
 
     kt = KeyTest(env, red_policy)

@@ -79,15 +79,16 @@ if __name__ == '__main__':
                 'agent-1-policy':(None, obs_space, act_space, {}),
                 'agent-2-policy':(None, obs_space, act_space, {}),
                 'easy-defend-policy': (DefendGen(2, Team.RED_TEAM, 'competition_easy', 3, env.par_env.agent_obs_normalizer), obs_space, act_space, {}),
-                'easy-attack-policy': (AttackGen(3, Team.RED_TEAM, 'competition_easy', 3, env.par_env.agent_obs_normalizer), obs_space, act_space, {})
-                'easy-attack-policy': (AttackGen(3, Team.RED_TEAM, 'noop', 3, env.par_env.agent_obs_normalizer), obs_space, act_space, {})}
+                'easy-attack-policy': (AttackGen(3, Team.RED_TEAM, 'competition_easy', 3, env.par_env.agent_obs_normalizer), obs_space, act_space, {}),
+                'easy-attack-policy': (AttackGen(3, Team.RED_TEAM, 'nothing', 3, env.par_env.agent_obs_normalizer), obs_space, act_space, {})}
     env.close()
     ppo_config = PPOConfig().environment(env='pyquaticus').rollouts(num_rollout_workers=3).resources(num_cpus_per_worker=1, num_gpus=int(os.environ.get("RLLIB_NUM_GPUS", "0")))
     #If your system allows changing the number of rollouts can significantly reduce training times (num_rollout_workers=15)
-    ppo_config.multi_agent(policies=policies, policy_mapping_fn=policy_mapping_fn, policies_to_train=["agent-0-policy", "agent-1-policy"],)
+    ppo_config.multi_agent(policies=policies, policy_mapping_fn=policy_mapping_fn, policies_to_train=["agent-0-policy", "agent-1-policy", "agent-2-policy"],)
     algo = ppo_config.build()
     algo.restore(args.checkpoint)
 
+    #Export Each individual agent policy from the rllib checkpoint (Recomended that you use this rather than the whole rllib checkpoint)
     agent_0_policy = algo.get_policy(policy_id="agent-0-policy")
     agent_1_policy = algo.get_policy(policy_id="agent-1-policy")
     agent_2_policy = algo.get_policy(policy_id="agent-2-policy")

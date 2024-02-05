@@ -14,7 +14,7 @@ config_dict = config_dict_std
 config_dict["max_time"] = 600.0
 config_dict["max_score"] = 100
 
-env = pyquaticus_v0.PyQuaticusEnv(team_size=2, config_dict=config_dict,render_mode='human')
+env = pyquaticus_v0.PyQuaticusEnv(team_size=1, config_dict=config_dict,render_mode='human')
 term_g = {0:False,1:False}
 truncated_g = {0:False,1:False}
 term = term_g
@@ -22,11 +22,11 @@ trunc = truncated_g
 obs = env.reset()
 temp_score = env.game_score
 
-H_one = BaseAttacker(2, Team.RED_TEAM, mode='competition_easy')
+H_one = BaseDefender(1, Team.RED_TEAM, mode='competition_medium')
 H_two = BaseDefender(3, Team.RED_TEAM, mode='competition_medium')
 
-R_one = BaseDefender(0, Team.BLUE_TEAM, mode='competition_medium')
-R_two = BaseAttacker(1, Team.BLUE_TEAM, mode='competition_easy')
+R_one = BaseDefender(0, Team.BLUE_TEAM, mode='competition_easy')
+R_two = BaseAttacker(0, Team.BLUE_TEAM, mode='competition_easy')
 step = 0
 while True:
     new_obs = {}

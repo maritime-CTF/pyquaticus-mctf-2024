@@ -520,7 +520,7 @@ class PyQuaticusEnv(PyQuaticusEnvBase):
         #red_captures: Represents the number of times the blue team has grabbed reds flag and brought it back to their side
         #red_tags: The number of times the blue team successfully tagged an opponent
         #red_grabs: The number of times the blue team grabbed the opponents flag
-        self.game_score = {'blue_captures':0, 'blue_tags':0, 'blue_grabs':0, 'red_captures':0, 'red_tags':0, 'red_grabs':0}    
+        self.game_score = {'blue_captures':0, 'blue_tags':0, 'blue_grabs':0, 'blue_collisions':0, 'red_captures':0, 'red_tags':0, 'red_grabs':0, 'red_collisions':0}    
         self.render_mode = render_mode
         self.render_ids = render_agent_ids
         self.collision_radius = config_dict["collision_radius"]
@@ -903,8 +903,18 @@ class PyQuaticusEnv(PyQuaticusEnvBase):
                             self.active_collisions.remove((player.id,other_player.id))
                     else:
                         if dist_between_agents <= self.collision_radius:
-                            self.state["num_agent_collisions"][other_player.id] += 1
-                            self.state["num_agent_collisions"][player.id] += 1
+                            if not other_player.is_tagged:
+                                self.state["num_agent_collisions"][other_player.id] += 1
+                                if other_player.team == Team.BLUE_TEAM:
+                                    self.game_score['blue_collisions'] += 1
+                                else:
+                                    self.game_score['red_collisions'] += 1
+                            if not player.is_tagged:
+                                self.state["num_agent_collisions"][player.id] += 1
+                                if player.team == Team.BLUE_TEAM:
+                                    self.game_score['blue_collisions'] += 1
+                                else:
+                                    self.game_score['red_collisions'] += 1
                             self.active_collisions.append((player.id, other_player.id))
             if player.on_own_side and (
                 player.tagging_cooldown == self.tagging_cooldown

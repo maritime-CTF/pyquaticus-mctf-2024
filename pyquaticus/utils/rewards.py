@@ -127,4 +127,14 @@ def sparse(self, params, prev_params):
 
 
 def custom_v1(self, params, prev_params):
-    return 0
+    reward = 0
+    if params["team_flag_capture"] and not prev_params["team_flag_capture"]:
+        reward += 100
+    if params["opponent_flag_capture"] and not prev_params["opponent_flag_capture"]:
+        reward +=  -100
+    if not params["agent_oob"][params["agent_id"]] == -1:
+        reward -= 100
+    if params["has_flag"]: #Sloped reward to encourage agent to capture the flag
+        reward += params["team_flag_home"] * float(-1/32) + 5
+
+    return reward

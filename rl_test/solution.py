@@ -16,9 +16,9 @@ class solution:
         #NOTE: You can only load from files that are in the same directory as the solution.py or a subdirectory
         
         #Load in learned policies see examples below:
-        self.policy_one = Policy.from_checkpoint(os.path.dirname(os.path.realpath(__file__))+ '/checkpoint_000006/policies/agent-0-policy/')
-        self.policy_two = Policy.from_checkpoint(os.path.dirname(os.path.realpath(__file__))+ '/checkpoint_000006/policies/agent-1-policy/')
-        self.policy_three = Policy.from_checkpoint(os.path.dirname(os.path.realpath(__file__))+ '/checkpoint_000006/policies/agent-1-policy/')
+        self.policy_one = Policy.from_checkpoint(os.path.dirname(os.path.realpath(__file__))+ '/policies/agent-0-policy/')
+        self.policy_two = Policy.from_checkpoint(os.path.dirname(os.path.realpath(__file__))+ '/policies/agent-1-policy/')
+        self.policy_three = Policy.from_checkpoint(os.path.dirname(os.path.realpath(__file__))+ '/policies/agent-2-policy/')
 	#Given an observation return a valid action agent_id is agent that needs an action, observation space is the current normalized observation space for the specific agent
     def compute_action(self,agent_id:int, observation_normalized:list, observation:dict):
         if agent_id == 0 or agent_id == 3:

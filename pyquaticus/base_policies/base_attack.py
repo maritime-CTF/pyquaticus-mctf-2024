@@ -132,7 +132,8 @@ class BaseAttacker(BaseAgentPolicy):
                     self.goal = 'CF'
                 elif self.goal == 'CF':
                     self.goal = 'SC'
-
+            if self.goal == 'CF' and -6 <= self.get_distance_between_2_points(estimated_position, config_dict_std["aquaticus_field_points"][value]) <= 6:
+                self.goal = 'SC'
             return self.goal
         elif self.mode == "medium":
             

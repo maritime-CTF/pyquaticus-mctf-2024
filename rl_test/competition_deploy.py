@@ -48,24 +48,27 @@ from ray.rllib.policy.policy import Policy
 RENDER_MODE = 'human'
 #RENDER_MODE = None
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Deploy a trained policy in a 2v2 PyQuaticus environment')
+    parser = argparse.ArgumentParser(description='Deploy a trained policy in a 3v3 PyQuaticus environment')
     parser.add_argument('policy_one', help='Please enter the path to the model you would like to load in')
-    parser.add_argument('policy_two', help='Please enter the path to the model you would like to load in') 
+    parser.add_argument('policy_two', help='Please enter the path to the model you would like to load in')
+    parser.add_argument('policy_three', help='Please enter the path to the model you would like to load in') 
     test = True
     reward_config = {0:None, 1:None}
     args = parser.parse_args()
 
-    env = pyquaticus_v0.PyQuaticusEnv(render_mode='human', team_size=2)
+    env = pyquaticus_v0.PyQuaticusEnv(render_mode='human', team_size=3)
     term_g = {0:False,1:False}
     truncated_g = {0:False,1:False}
     term = term_g
     trunc = truncated_g
     obs = env.reset()
     temp_score = env.game_score
-    H_one = BaseDefender(2, Team.RED_TEAM, mode='competition_easy')
-    H_two = BaseAttacker(3, Team.RED_TEAM, mode='competition_easy')
+    H_one = BaseDefender(3, Team.RED_TEAM, mode='competition_easy')
+    H_two = BaseAttacker(4, Team.RED_TEAM, mode='competition_easy')
+    H_three = BaseAttacker(5, Team.RED_TEAM, mode='competition_easy')
     policy_one = Policy.from_checkpoint(args.policy_one)
     policy_two = Policy.from_checkpoint(args.policy_two)
+    policy_three = Policy.from_checkpoint(args.policy_two)
     step = 0
     max_step = 2500
     while True:
@@ -77,11 +80,13 @@ if __name__ == '__main__':
         #Get learning agent action from policy
         zero = policy_one.compute_single_action(obs[0])[0]
         one = policy_two.compute_single_action(obs[1])[0]
+        two = policy_three.compute_single_action(obs[2])[0]
         #Compute Heuristic agent actions
-        two = H_one.compute_action(new_obs)
-        three = H_two.compute_action(new_obs)
+        three = H_one.compute_action(new_obs)
+        four = H_two.compute_action(new_obs)
+        five = H_three.compute_action(new_obs)
         #Step the environment
-        obs, reward, term, trunc, info = env.step({0:zero,1:one, 2:two, 3:three})
+        obs, reward, term, trunc, info = env.step({0:zero, 1:one, 2:two, 3:three, 4:four, 5:five})
         k =  list(term.keys())
         if step >= max_step:
             break

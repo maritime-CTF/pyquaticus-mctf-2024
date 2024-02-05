@@ -107,7 +107,7 @@ def sparse(self, params, prev_params):
     if params["team_flag_capture"] and not prev_params["team_flag_capture"]:
         reward += 100
     # Check to see if agent was tagged
-    if params["agent_tagged"][params["agent_id"]]:
+    if params["agent_oob"][params["agent_id"]] == -1 and params["agent_tagged"][params["agent_id"]] and not prev_params["agent_tagged"][prev_params["agent_id"]]:
         if prev_params["has_flag"]:
             reward += -100
         else:
@@ -120,11 +120,21 @@ def sparse(self, params, prev_params):
         else:
             reward += 100
     # Penalize agent if it went out of bounds (Hit border wall)
-    if params["agent_oob"][params["agent_id"]] == 1:
+    if params["agent_oob"][params["agent_id"]] > prev_params["agent_oob"][prev_params["agent_id"]]:
         reward -= 100
 
     return reward
 
 
 def custom_v1(self, params, prev_params):
-    return 0
+    reward = 0
+    if params["team_flag_capture"] and not prev_params["team_flag_capture"]:
+        reward += 100
+    if params["opponent_flag_capture"] and not prev_params["opponent_flag_capture"]:
+        reward +=  -100
+    if not params["agent_oob"][params["agent_id"]] == -1:
+        reward -= 100
+    if params["has_flag"]: #Sloped reward to encourage agent to capture the flag
+        reward += params["team_flag_home"] * float(-1/32) + 5
+
+    return reward

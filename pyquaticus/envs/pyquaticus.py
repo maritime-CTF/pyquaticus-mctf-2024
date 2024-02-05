@@ -1,4 +1,4 @@
-# DISTRIBUTION STATEMENT A. Approved for public release. Distribution is unlimited.
+#DISTRIBUTION STATEMENT A. Approved for public release. Distribution is unlimited.
 #
 # This material is based upon work supported by the Under Secretary of Defense for
 # Research and Engineering under Air Force Contract No. FA8702-15-D-0001. Any opinions,
@@ -123,7 +123,29 @@ class PyQuaticusEnvBase(ParallelEnv, ABC):
         processed_action_dict = OrderedDict()
         for player in self.players.values():
             if player.id in action_dict:
-                speed, heading = self._discrete_action_to_speed_relheading(action_dict[player.id])
+                default_action = True
+                try:
+                    action_dict[player.id] / 2
+                except:
+                    default_action = False
+                if default_action:
+                    speed, heading = self._discrete_action_to_speed_relheading(action_dict[player.id])
+                else:
+                    #Make point system the same on both blue and red side
+                    if player.team == Team.BLUE_TEAM:
+                        if 'P' in action_dict[player.id]:
+                            action_dict[player.id] = 'S' + action_dict[player.id][1:]
+                        elif 'S' in action_dict[player.id]:
+                            action_dict[player.id] = 'P' + action_dict[player.id][1:]
+                        if 'X' not in action_dict[player.id] and action_dict[player.id] not in ['SC', 'CC', 'PC']:
+                            action_dict[player.id] += 'X'
+                        elif action_dict[player.id] not in ['SC', 'CC', 'PC']:
+                            action_dict[player.id] = action_dict[player.id][:-1]
+                    _, heading = mag_bearing_to(player.pos, self.config_dict["aquaticus_field_points"][action_dict[player.id]], player.heading)
+                    if -0.5 <= self.get_distance_between_2_points(player.pos, self.config_dict["aquaticus_field_points"][action_dict[player.id]]) <= 0.5: #
+                        speed = 0.0
+                    else:
+                        speed = self.max_speed
             else:
                 # if no action provided, stop moving
                 speed, heading = 0.0, player.heading
@@ -498,17 +520,17 @@ class PyQuaticusEnv(PyQuaticusEnvBase):
         #red_captures: Represents the number of times the blue team has grabbed reds flag and brought it back to their side
         #red_tags: The number of times the blue team successfully tagged an opponent
         #red_grabs: The number of times the blue team grabbed the opponents flag
-        self.game_score = {'blue_captures':0, 'blue_tags':0, 'blue_grabs':0, 'red_captures':0, 'red_tags':0, 'red_grabs':0}    
+        self.game_score = {'blue_captures':0, 'blue_tags':0, 'blue_grabs':0, 'blue_collisions':0, 'red_captures':0, 'red_tags':0, 'red_grabs':0, 'red_collisions':0}    
         self.render_mode = render_mode
         self.render_ids = render_agent_ids
-
+        self.collision_radius = config_dict["collision_radius"]
         # set variables from config
         self.set_config_values(self.config_dict)
-
+        self.active_collisions = [] #List containing all new collisions between agents (Prevents collisions being counted every step)
         self.state = {}
         self.dones = {}
         self.reset_count = 0
-
+        self.step_num = 0
         self.learning_iteration = 0
 
         self.seed()
@@ -621,10 +643,12 @@ class PyQuaticusEnv(PyQuaticusEnvBase):
 
             Additional info (not currently used)
         """
+
         if self.state is None:
             raise Exception("Call reset before using step method.")
 
         # set the time
+        self.step_num += 1
         self.current_time += self.sim_speedup_factor * self.tau
         self.state["current_time"] = self.current_time
         if not set(raw_action_dict.keys()) <= set(self.players):
@@ -758,7 +782,7 @@ class PyQuaticusEnv(PyQuaticusEnvBase):
                         self.red_team_flag_pickup = False
                     else:
                         self.blue_team_flag_pickup = False
-                self.state["agent_oob"][player.id] = 1
+                self.state["agent_oob"][player.id] = self.step_num
                 if config_dict_std["teleport_on_tag"]:
                     player.reset()
                 else:
@@ -767,7 +791,8 @@ class PyQuaticusEnv(PyQuaticusEnvBase):
                     player.rotate()
                 continue
             else:
-                self.state["agent_oob"][player.id] = 0
+                if self.state["agent_oob"][player.id] < self.step_num:
+                    self.state["agent_oob"][player.id] = -1
 
             # check if agent is in keepout region
             ag_dis_2_flag = self.get_distance_between_2_points(
@@ -867,6 +892,33 @@ class PyQuaticusEnv(PyQuaticusEnvBase):
         self.state["agent_captures"] = [None] * self.num_agents
         for player in self.players.values():
             # Only continue logic check if player tagged someone if it's on its own side and is untagged.
+            for other_player in self.players.values():
+                if other_player.id == player.id:
+                    continue
+                else:
+                    dist_between_agents = self.get_distance_between_2_points(
+                            player.pos, other_player.pos
+                        )
+                    if (player.id, other_player.id) in self.active_collisions:
+                        if dist_between_agents <= self.collision_radius:
+                            continue
+                        else:
+                            self.active_collisions.remove((player.id,other_player.id))
+                    else:
+                        if dist_between_agents <= self.collision_radius:
+                            if not other_player.is_tagged:
+                                self.state["num_agent_collisions"][other_player.id] += 1
+                                if other_player.team == Team.BLUE_TEAM:
+                                    self.game_score['blue_collisions'] += 1
+                                else:
+                                    self.game_score['red_collisions'] += 1
+                            if not player.is_tagged:
+                                self.state["num_agent_collisions"][player.id] += 1
+                                if player.team == Team.BLUE_TEAM:
+                                    self.game_score['blue_collisions'] += 1
+                                else:
+                                    self.game_score['red_collisions'] += 1
+                            self.active_collisions.append((player.id, other_player.id))
             if player.on_own_side and (
                 player.tagging_cooldown == self.tagging_cooldown
             ) and not player.is_tagged:
@@ -1265,7 +1317,7 @@ class PyQuaticusEnv(PyQuaticusEnvBase):
 
         if options is not None:
             self.normalize = options.get("normalize", config_dict_std["normalize"])
-
+            self.collision_radius = options["collision_radius"]
         if return_info:
             raise DeprecationWarning("return_info has been deprecated by PettingZoo -- https://github.com/Farama-Foundation/PettingZoo/pull/890")
 
@@ -1276,7 +1328,7 @@ class PyQuaticusEnv(PyQuaticusEnvBase):
             ],  # Blue Team
             [self.world_size[0] / 8, self.world_size[1] / 2],  # Red Team
         ]
-
+        
         for flag in self.flags:
             flag.home = flag_locations[int(flag.team)]
             flag.reset()
@@ -1301,9 +1353,10 @@ class PyQuaticusEnv(PyQuaticusEnvBase):
                 None
             ] * self.num_agents,  # whether this agent tagged something
             "agent_tagged": [0] * self.num_agents,  # if this agent was tagged
-            "agent_oob": [0] * self.num_agents,  # if this agent went out of bounds
+            "agent_oob": [-1] * self.num_agents,  # if this agent went out of bounds
+            "num_agent_collisions": [0] * self.num_agents,# The number of collisions each agent has been involved in
         }
-
+        self.active_collisions = []
         for k in self.game_score:
             self.game_score[k] = 0
 
@@ -1318,6 +1371,7 @@ class PyQuaticusEnv(PyQuaticusEnvBase):
         self.message = ""
         self.current_time = 0
         self.reset_count += 1
+        self.step_num = 0
         reset_obs = {agent_id: self.state_to_obs(agent_id, self.normalize) for agent_id in self.players}
 
         if self.render_mode:
@@ -1573,8 +1627,13 @@ class PyQuaticusEnv(PyQuaticusEnvBase):
         draw.line(
             self.screen, (0, 0, 0), top_middle, bottom_middle, width=self.border_width
         )
+        #Draw Points Debugging
+        if self.config_dict["render_field_points"]:
+            for v in self.config_dict["aquaticus_field_points"]:
+                draw.circle(self.screen, (128,0,128), self.world_to_screen(self.config_dict["aquaticus_field_points"][v]), 5,)
 
         agent_id_blit_poses = {}
+
         for team in Team:
             flag = self.flags[int(team)]
             teams_players = self.agents_of_team[team]

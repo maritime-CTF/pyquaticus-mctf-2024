@@ -142,7 +142,7 @@ class PyQuaticusEnvBase(ParallelEnv, ABC):
                         elif action_dict[player.id] not in ['SC', 'CC', 'PC']:
                             action_dict[player.id] = action_dict[player.id][:-1]
                     _, heading = mag_bearing_to(player.pos, self.config_dict["aquaticus_field_points"][action_dict[player.id]], player.heading)
-                    if -0.5 <= self.get_distance_between_2_points(player.pos, self.config_dict["aquaticus_field_points"][action_dict[player.id]]) <= 0.5: #
+                    if -2 <= self.get_distance_between_2_points(player.pos, self.config_dict["aquaticus_field_points"][action_dict[player.id]]) <= 2: #
                         speed = 0.0
                     else:
                         speed = self.max_speed

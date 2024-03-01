@@ -122,7 +122,7 @@ class BaseAttacker(BaseAgentPolicy):
             if my_obs["is_tagged"]:
                 self.goal = 'SC'
 
-            if -1 <= self.get_distance_between_2_points(estimated_position, config_dict_std["aquaticus_field_points"][value]) <= 1:
+            if -2.5 <= self.get_distance_between_2_points(estimated_position, config_dict_std["aquaticus_field_points"][value]) <= 2.5:
                 
                 if self.goal == 'SC':
                     self.goal = 'CFX'

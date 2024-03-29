@@ -101,5 +101,5 @@ if __name__ == '__main__':
         temp_score[k] += env.game_score[k]
     env.close()
     print("Medium Detailed Results: ", temp_score)
-    medium_score += temp_score['red_captures'] - temp_score['blue_captures'] - temp_score['blue_collisions']
+    medium_score += temp_score['blue_captures'] - temp_score['red_captures'] - temp_score['blue_collisions']
     print("Final Medium Score: ", medium_score)

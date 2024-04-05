@@ -10,7 +10,7 @@ from pyquaticus.base_policies.base_combined import Heuristic_CTF_Agent
 from pyquaticus.envs.pyquaticus import Team
 from collections import OrderedDict
 from pyquaticus.config import config_dict_std, ACTION_MAP
-
+import copy
 #Update this to the path of your solution.py file or ensure its on the same level as this (competition_test.py) script
 from solution import solution
 
@@ -32,13 +32,13 @@ if __name__ == '__main__':
 
     step = 0
     #RED side Competition Easy Defender and Attacker vs Submission (Blue Side)
-    env = pyquaticus_v0.PyQuaticusEnv(team_size=3, config_dict=config_dict,render_mode=RENDER_MODE)
+    env = pyquaticus_v0.PyQuaticusEnv(team_size=3, config_dict=config_dict,render_mode=None)
     term_g = {0:False,1:False}
     truncated_g = {0:False,1:False}
     term = term_g
     trunc = truncated_g
     obs = env.reset()
-    temp_score = env.game_score
+    temp_score = copy.deepcopy(env.game_score)
     sol = solution()
     H_one = BaseDefender(3, Team.RED_TEAM, mode='competition_easy')
     H_two = BaseAttacker(4, Team.RED_TEAM, mode='competition_easy')
@@ -64,7 +64,6 @@ if __name__ == '__main__':
         temp_score[k] += env.game_score[k]
     env.close()
     easy_score = temp_score['blue_captures'] - temp_score['red_captures'] - temp_score['blue_collisions']
-    print("Easy Detailed Results: ", temp_score)
     print("Final Easy Score: ", easy_score)
 
     step = 0
@@ -75,7 +74,7 @@ if __name__ == '__main__':
     term = term_g
     trunc = truncated_g
     obs = env.reset()
-    temp_score = env.game_score
+    temp_score = copy.deepcopy(env.game_score)
     sol = solution()
     H_one = BaseDefender(3, Team.RED_TEAM, mode='competition_medium')
     H_two = BaseAttacker(4, Team.RED_TEAM, mode='competition_medium')

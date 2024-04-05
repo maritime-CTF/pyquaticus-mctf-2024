@@ -906,19 +906,12 @@ class PyQuaticusEnv(PyQuaticusEnvBase):
                             self.active_collisions.remove((player.id,other_player.id))
                     else:
                         if dist_between_agents <= self.collision_radius:
-                            if not other_player.is_tagged:
-                                self.state["num_agent_collisions"][other_player.id] += 1
+                            if not player.is_tagged:
                                 if other_player.team == Team.BLUE_TEAM:
                                     self.game_score['blue_collisions'] += 1
                                 else:
                                     self.game_score['red_collisions'] += 1
-                            if not player.is_tagged:
-                                self.state["num_agent_collisions"][player.id] += 1
-                                if player.team == Team.BLUE_TEAM:
-                                    self.game_score['blue_collisions'] += 1
-                                else:
-                                    self.game_score['red_collisions'] += 1
-                            self.active_collisions.append((player.id, other_player.id))
+                                self.active_collisions.append((player.id, other_player.id))
             if player.on_own_side and (
                 player.tagging_cooldown == self.tagging_cooldown
             ) and not player.is_tagged:

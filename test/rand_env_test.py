@@ -62,3 +62,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
     env = pyquaticus_v0.PyQuaticusEnv(render_mode=RENDER_MODE, team_size=3)
     run_one_episode(env)
+    print("FINAL ENV SCORE: ", env.game_score)

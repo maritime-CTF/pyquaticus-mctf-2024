@@ -91,6 +91,9 @@ class KeyTest:
         while True:
             action_dict = self.process_event(self.quittable)
             self.obs, rewards, terminated, truncated, info = self.env.step(action_dict)
+            #print("Full Game: ", self.env.game_score)
+            #print()
+            #print()w
             for k in terminated:
                 if terminated[k] == True or truncated[k]==True:
                     time.sleep(1.)

@@ -20,7 +20,8 @@ class solution:
         self.policy_two = Policy.from_checkpoint(os.path.dirname(os.path.realpath(__file__))+ '/checkpoint_000006/policies/agent-1-policy/')
 
 	#Given an observation return a valid action agent_id is agent that needs an action, observation space is the current normalized observation space for the specific agent
-    def compute_action(self,agent_id:int, observation_normalized:list, observation:dict):
+    #New: Full Observation includes the full game state (Every agents individual observation)
+    def compute_action(self,agent_id:int, observation_normalized:list, observation:dict, full_observation:dict):
         if agent_id == 0 or agent_id == 2:
             return self.policy_one.compute_single_action(observation_normalized)[0]
         else:

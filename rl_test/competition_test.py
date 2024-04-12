@@ -48,9 +48,14 @@ if __name__ == '__main__':
         #Get normalized observation (for heuristic approaches)
         for k in obs:
             new_obs[k] = env.agent_obs_normalizer.unnormalized(obs[k])
-        zero = sol.compute_action(0,obs[0], new_obs[0])
-        one = sol.compute_action(1,obs[1],new_obs[1])
-        two = sol.compute_action(2,obs[2],new_obs[2])
+        try:
+            zero = sol.compute_action(0,obs[0], new_obs[0], new_obs)
+            one = sol.compute_action(1,obs[1],new_obs[1], new_obs)
+            two = sol.compute_action(2,obs[2],new_obs[2], new_obs)
+        except:
+            zero = sol.compute_action(0,obs[0], new_obs[0])
+            one = sol.compute_action(1,obs[1],new_obs[1])
+            two = sol.compute_action(2,obs[2],new_obs[2])
         three = H_one.compute_action(new_obs)
         four = H_two.compute_action(new_obs)
         five = H_three.compute_action(new_obs)
@@ -63,7 +68,7 @@ if __name__ == '__main__':
     for k in env.game_score:
         temp_score[k] += env.game_score[k]
     env.close()
-    easy_score = temp_score['blue_captures'] - temp_score['red_captures'] - temp_score['blue_collisions']
+    easy_score = temp_score['blue_captures'] - temp_score['red_captures'] - (temp_score['blue_collisions']/4)
     print("Final Easy Score: ", easy_score)
 
     step = 0
@@ -84,9 +89,14 @@ if __name__ == '__main__':
         #Get normalized observation (for heuristic approaches)
         for k in obs:
             new_obs[k] = env.agent_obs_normalizer.unnormalized(obs[k])
-        zero = sol.compute_action(0,obs[0], new_obs[0])
-        one = sol.compute_action(1,obs[1],new_obs[1])
-        two = sol.compute_action(2,obs[2],new_obs[2])
+        try:
+            zero = sol.compute_action(0,obs[0], new_obs[0], new_obs)
+            one = sol.compute_action(1,obs[1],new_obs[1], new_obs)
+            two = sol.compute_action(2,obs[2],new_obs[2], new_obs)
+        except:
+            zero = sol.compute_action(0,obs[0], new_obs[0])
+            one = sol.compute_action(1,obs[1],new_obs[1])
+            two = sol.compute_action(2,obs[2],new_obs[2])
         three = H_one.compute_action(new_obs)
         four = H_two.compute_action(new_obs)
         five = H_three.compute_action(new_obs)
@@ -100,5 +110,5 @@ if __name__ == '__main__':
         temp_score[k] += env.game_score[k]
     env.close()
     print("Medium Detailed Results: ", temp_score)
-    medium_score += temp_score['blue_captures'] - temp_score['red_captures'] - temp_score['blue_collisions']
+    medium_score += temp_score['blue_captures'] - temp_score['red_captures'] - (temp_score['blue_collisions']/4)
     print("Final Medium Score: ", medium_score)
